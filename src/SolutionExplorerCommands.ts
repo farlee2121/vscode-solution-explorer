@@ -50,6 +50,9 @@ export class SolutionExplorerCommands {
         this.commands['createFile'] = [new cmds.CreateFileCommand(templateEngineCollection),
             [ContextValues.projectFile, ContextValues.projectFolder, ...both(ContextValues.project)]];
 
+        this.commands['createFileAbove'] = [new cmds.CreateFileAboveCommand(provider),
+            [...fsharp(ContextValues.projectFile)]]
+
         this.commands['createFolder'] = [new cmds.CreateFolderCommand(),
             [ContextValues.projectFile, ContextValues.projectFolder, ...both(ContextValues.project)]];
 
