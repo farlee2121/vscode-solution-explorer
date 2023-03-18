@@ -6,6 +6,7 @@ import * as config from "@extensions/config";
 import { Include, ProjectItem, ProjectItemsFactory } from "../Items";
 import { ProjectFileStat } from "../ProjectFileStat";
 import { Manager } from "./Manager";
+import { Direction, RelativeFilePosition } from "../RelativeFilePosition";
 
 export class XmlManager implements Manager {
     private readonly projectFolderPath: string;
@@ -35,7 +36,7 @@ export class XmlManager implements Manager {
         return this.fullPath.toLocaleLowerCase().endsWith(".fsproj");
     }
 
-    public async createFile(folderpath: string, filename: string, content?: string, aboveItemPath?: string): Promise<string> {
+    public async createFile(folderpath: string, filename: string, content?: string, relativePosition?: RelativeFilePosition): Promise<string> {
         await this.ensureIsLoaded();
 
         const folderRelativePath = this.getRelativePath(folderpath);
@@ -60,7 +61,7 @@ export class XmlManager implements Manager {
 
         const fullPath = path.join(this.projectFolderPath, relativePath);
         if (!this.isCurrentlyIncluded(fullPath)) {
-            this.currentItemGroupAdd(type, relativePath, undefined, aboveItemPath);
+            this.currentItemGroupAdd(type, relativePath, undefined, relativePosition);
         }
 
         await this.saveProject();
@@ -504,7 +505,7 @@ export class XmlManager implements Manager {
        }
     }
 
-    private currentItemGroupAdd(type: string, include: string, isFolder: boolean = false, aboveItemPath?: string): void {
+    private currentItemGroupAdd(type: string, include: string, isFolder: boolean = false, relativePosition?: RelativeFilePosition): void {
         const itemGroup = this.checkCurrentItemGroup();
         if (!itemGroup) { return; }
 
@@ -526,19 +527,20 @@ export class XmlManager implements Manager {
             }
         }
 
-        if(aboveItemPath){
+        if(relativePosition){
             if(!this.document) return;
             const project = XmlManager.getProjectElement(this.document);
             if(!project){return;}
             
-            const lowercaseTargetFilePath = this.getRelativePath(aboveItemPath).toLocaleLowerCase();
+            const lowercaseTargetFilePath = this.getRelativePath(relativePosition.fullpath).toLocaleLowerCase();
             
             this.someProjectItem(project, (itemGroup, e) =>{
                 if (e.attributes && e.attributes.Include && e.attributes.Include.toLocaleLowerCase() === lowercaseTargetFilePath) {
 
                     const index = itemGroup.elements.indexOf(e);
                     if (index > 0) {
-                        itemGroup.elements.splice(index, 0, newItemElement);
+                        const indexOffset = relativePosition.direction === Direction.Above ? 0 : 1;
+                        itemGroup.elements.splice(index + indexOffset, 0, newItemElement);
                     }
 
                     return true;
