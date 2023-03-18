@@ -2,7 +2,7 @@ import { ProjectFileStat } from "../ProjectFileStat";
 
 
 export interface Manager {
-    createFile(folderpath: string, filename: string, content?: string): Promise<string>;
+    createFile(folderpath: string, filename: string, content?: string, aboveItemPath?:string): Promise<string>;
     createFolder(folderpath: string): Promise<string>;
     deleteFile(filepath: string): Promise<void>;
     deleteFolder(folderpath: string): Promise<void>;

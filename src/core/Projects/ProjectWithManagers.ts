@@ -25,8 +25,8 @@ export abstract class ProjectWithManagers extends ProjectWithNugetDependencies {
         await this.xml.refresh();
     }
 
-    public createFile(folderpath: string, filename: string, content?: string | undefined): Promise<string> {
-        return this.callInManagers(m => m.createFile(folderpath, filename, content));
+    public createFile(folderpath: string, filename: string, content?: string | undefined, aboveItemPath?:string): Promise<string> {
+        return this.callInManagers(m => m.createFile(folderpath, filename, content, aboveItemPath));
     }
 
     public createFolder(folderpath: string): Promise<string> {

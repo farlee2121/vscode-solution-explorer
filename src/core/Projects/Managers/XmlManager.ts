@@ -35,7 +35,7 @@ export class XmlManager implements Manager {
         return this.fullPath.toLocaleLowerCase().endsWith(".fsproj");
     }
 
-    public async createFile(folderpath: string, filename: string, content?: string): Promise<string> {
+    public async createFile(folderpath: string, filename: string, content?: string, aboveItemPath?: string): Promise<string> {
         await this.ensureIsLoaded();
 
         const folderRelativePath = this.getRelativePath(folderpath);
@@ -60,7 +60,7 @@ export class XmlManager implements Manager {
 
         const fullPath = path.join(this.projectFolderPath, relativePath);
         if (!this.isCurrentlyIncluded(fullPath)) {
-            this.currentItemGroupAdd(type, relativePath);
+            this.currentItemGroupAdd(type, relativePath, undefined, aboveItemPath);
         }
 
         await this.saveProject();
@@ -487,7 +487,24 @@ export class XmlManager implements Manager {
         }
     }
 
-    private currentItemGroupAdd(type: string, include: string, isFolder: boolean = false): void {
+    private someProjectItem(project: xml.XmlElement, test:(group:xml.XmlElement, item:xml.XmlElement) => Boolean): xml.XmlElement | undefined {
+        const nodeNames = this.getXmlNodeNames();
+        const isValidElement = (e: xml.XmlElement) => nodeNames.length === 0 || nodeNames.indexOf(e.name) > -1;
+
+        for(let i = 0; i < project.elements.length; i++) {
+            const maybeGroup = project.elements[i];
+            if(maybeGroup.name === 'ItemGroup' && maybeGroup.elements && Array.isArray(maybeGroup.elements)){
+                const curried = (item: xml.XmlElement) : Boolean => isValidElement(item) ? test(maybeGroup, item) : false
+                
+                const item = maybeGroup.elements.some(curried);
+                if(item){
+                    return item;
+                }
+            }
+       }
+    }
+
+    private currentItemGroupAdd(type: string, include: string, isFolder: boolean = false, aboveItemPath?: string): void {
         const itemGroup = this.checkCurrentItemGroup();
         if (!itemGroup) { return; }
 
@@ -501,13 +518,38 @@ export class XmlManager implements Manager {
             return;
         }
 
-        itemGroup.elements.push({
+        const newItemElement = {
             type: 'element',
             name: type,
             attributes: {
                 ["Include"]: include
             }
-        });
+        }
+
+        if(aboveItemPath){
+            if(!this.document) return;
+            const project = XmlManager.getProjectElement(this.document);
+            if(!project){return;}
+            
+            const lowercaseTargetFilePath = this.getRelativePath(aboveItemPath).toLocaleLowerCase();
+            
+            this.someProjectItem(project, (itemGroup, e) =>{
+                if (e.attributes && e.attributes.Include && e.attributes.Include.toLocaleLowerCase() === lowercaseTargetFilePath) {
+
+                    const index = itemGroup.elements.indexOf(e);
+                    if (index > 0) {
+                        itemGroup.elements.splice(index, 0, newItemElement);
+                    }
+
+                    return true;
+                }
+
+                return false;
+            });
+        }
+        else{
+            itemGroup.elements.push(newItemElement);
+        }
     }
 
     private checkCurrentItemGroup(): XmlElement | undefined {

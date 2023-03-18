@@ -19,7 +19,7 @@ export class FileManager {
         }
     }
 
-    public async createFile(folderpath: string, filename: string, content?: string): Promise<string> {
+    public async createFile(folderpath: string, filename: string, content?: string, aboveItemPath?:string): Promise<string> {
         let filepath = path.join(folderpath, filename);
         if (!(await fs.exists(filepath))) {
             await fs.writeFile(filepath, content || "");

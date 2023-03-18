@@ -11,7 +11,6 @@ export * from "./CleanCommand";
 export * from "./CollapseAllCommand";
 export * from "./CopyCommand";
 export * from "./CreateFileCommand";
-export * from "./CreateFileAboveCommand";
 export * from "./CreateFolderCommand";
 export * from "./CreateNewSolutionCommand";
 export * from "./CreateSolutionFolderCommand";

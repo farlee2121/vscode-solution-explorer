@@ -10,7 +10,7 @@ export class CreateFileCommand extends SingleItemActionsCommand {
     private defaultExtension: string = '';
     private wizard: dialogs.Wizard | undefined;
 
-    constructor(private readonly templaceEngineCollection: TemplateEngineCollection) {
+    constructor(private readonly templaceEngineCollection: TemplateEngineCollection, private readonly relativeToSelected?: "above"|undefined) {
         super('Create file');
     }
 
@@ -23,6 +23,7 @@ export class CreateFileCommand extends SingleItemActionsCommand {
 
         this.workspaceRoot = item.workspaceRoot;
         this.defaultExtension = item.project.fileExtension;
+        const relativeTo = !this.relativeToSelected ? undefined : item.path;
 
 
 
@@ -36,7 +37,7 @@ export class CreateFileCommand extends SingleItemActionsCommand {
                 const folderpath = this.getFolderPath(item);
                 const filename = this.getFilename(this.wizard.context.results[0]);
                 return [
-                    new CreateProjectFile(item.project, folderpath, filename),
+                    new CreateProjectFile(item.project, folderpath, filename, undefined, relativeTo),
                     new OpenFile(path.join(folderpath, filename))
                 ];
             }
@@ -49,7 +50,7 @@ export class CreateFileCommand extends SingleItemActionsCommand {
         const filepath = path.join(folderpath, filename);
 
         return [
-            new CreateProjectFile(item.project, folderpath, filename, content),
+            new CreateProjectFile(item.project, folderpath, filename, content, relativeTo),
             new OpenFile(filepath)
         ];
     }
