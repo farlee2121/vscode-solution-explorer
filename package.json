@@ -134,6 +134,12 @@
                 "icon": "$(new-file)"
             },
             {
+              "command": "solutionExplorer.createFileBelow",
+              "title": "Create file below",
+              "category": "Solution Explorer",
+              "icon": "$(new-file)"
+            },
+            {
                 "command": "solutionExplorer.renameFolder",
                 "title": "Rename",
                 "category": "Solution Explorer"
@@ -388,6 +394,11 @@
               {
                 "command": "solutionExplorer.createFileAbove",
                 "when": "view in solutionexplorer.viewTypes && viewItem in solutionExplorer.cmdAllowedContexts.createFileAbove",
+                "group": "2_workspace"
+              },
+              {
+                "command": "solutionExplorer.createFileBelow",
+                "when": "view in solutionexplorer.viewTypes && viewItem in solutionExplorer.cmdAllowedContexts.createFileBelow",
                 "group": "2_workspace"
               },
               {
